@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Heart, Pill, Shield, Lightbulb, AlertCircle, Loader } from 'lucide-react';
+import Groq from 'groq-sdk';
 
 export default function AIHealthAssistant() {
   const [activeTab, setActiveTab] = useState('question');
@@ -53,20 +53,33 @@ Guidelines:
   setLoading(true);
 
   try {
-    // Simulate AI response for demo
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const apiKey = process.env.REACT_APP_GROQ_API_KEY;
     
-    const mockResponses = {
-      symptom: "This symptom may indicate several conditions. Common causes include dehydration, stress, or fatigue. If symptoms persist, please consult a healthcare professional. In case of severe symptoms, seek emergency care immediately.",
-      preventive: "To maintain good health, focus on: 1) Regular exercise (150 min/week), 2) Balanced diet rich in fruits and vegetables, 3) Adequate sleep (7-9 hours), 4) Stress management, 5) Regular health check-ups. These preventive measures can significantly reduce health risks.",
-      awareness: "Good health awareness includes understanding your family medical history, knowing your vital signs (blood pressure, cholesterol), staying updated on vaccinations, and recognizing early warning signs of common conditions.",
-      question: "Health is a complex topic. Based on current medical evidence, I can share that maintaining physical activity, proper nutrition, mental health, and regular medical check-ups are fundamental to wellness. Always consult healthcare professionals for specific health concerns."
-    };
+    if (!apiKey) {
+      throw new Error('API key not found. Please check your .env.local file');
+    }
 
-    const response = mockResponses[activeTab] || mockResponses.question;
-    setResponses(prev => [...prev, { role: 'assistant', content: response }]);
+    const groq = new Groq({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true
+    });
+
+    const message = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: getSystemPrompt() },
+        ...responses.map(r => ({ role: r.role, content: r.content })),
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: 1024,
+      temperature: 0.7,
+    });
+
+    const assistantMessage = message.choices[0].message.content;
+    setResponses(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
   } catch (err) {
-    setError(`Error: ${err.message}`);
+    console.error('Error:', err);
+    setError(`Error: ${err.message}. Please check your API key or try again.`);
     setResponses(prev => prev.slice(0, -1));
   } finally {
     setLoading(false);
@@ -190,7 +203,7 @@ Guidelines:
                 }}
               >
                 {getTabIcon(tab)}
-                <span style={{ display: { xs: 'none', sm: 'inline' } }}>{getTabLabel(tab)}</span>
+                <span>{getTabLabel(tab)}</span>
               </button>
             ))}
           </div>
