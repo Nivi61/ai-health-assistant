@@ -56,12 +56,19 @@ A sophisticated GenAI-powered dynamic web application that provides reliable hea
 ### Component Structure
 
 AIHealthAssistant (Main Component)
+
 ├── Header Section (Title & Branding)
+
 ├── Disclaimer Banner (Medical Warning)
+
 ├── Tab Navigation (4 specialized modes)
+
 ├── Message Thread (Conversation History)
+
 ├── Input Form (User Query)
+
 ├── Features Grid (Overview Cards)
+
 └── Footer (Disclaimer Reiteration)
 
 
