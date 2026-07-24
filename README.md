@@ -57,6 +57,7 @@ A sophisticated GenAI-powered dynamic web application that provides reliable hea
 
 AIHealthAssistant (Main Component)
 
+
 ├── Header Section (Title & Branding)
 
 ├── Disclaimer Banner (Medical Warning)
